@@ -1,5 +1,33 @@
+##
+## Matthew Gast
+## October 2015
+##
+## This file contains R code to read in US DOT data on airline delays
+## for further processing of the airline delay data set for the
+## Coursera "Developing Data Products" course in the Johns Hopkins
+## Data Science Specialization
 
-createLookupTables <- function(dir) {
+loadLibraries <- function() {
+
+# Load required libraries for the application
+    
+  library(shiny)
+  library(MASS)
+  library(ggplot2) # Must come before dplyr
+  library(plyr)
+  library(dplyr)
+}
+
+createLookupTables <- function() {
+
+# This function creates lookup tables for the raw data by reading in
+# CSV files with data code books.  It then saves the lookup tables
+# into the global environment so they can be used by the read process
+#
+# Input:  None
+#
+# Output: A series of lookup tables in the global environment.
+    
   airline.id.raw <- read.csv("L_AIRLINE_ID.csv-")
   airport.id.raw <- read.csv("L_AIRPORT_ID.csv-")
   months.raw <- read.csv("L_MONTHS.csv-")
@@ -26,8 +54,18 @@ createLookupTables <- function(dir) {
   
 }
 
-readMonthDelay <- function (file, dir) {
-  filepath <- paste(dir, file, sep="/")
+readMonthDelay <- function (file, dir=getwd()) {
+
+# This function reads a single month of delay data.
+#
+# Input:  A file name and an optional directory
+#
+# Output: A data frame containing selected columns in on month of
+# data.
+    
+  if (!is.null(dir)) {
+    filepath <- paste(dir, file, sep="/")
+  }
   df <- read.csv(filepath)
   
   df <- join(df,airline.id.lookup,by='AIRLINE_ID')
@@ -37,27 +75,38 @@ readMonthDelay <- function (file, dir) {
   df <- join(df,weekdays.lookup,by='DAY_OF_WEEK')
   df <- join(df,yesno.lookup,by='CANCELLED')
   
-  df <- select(df,Weekday,Month,DAY_OF_MONTH,YEAR,Airline,FL_NUM,FromAirport,ToAirport,DEP_DELAY,ARR_DELAY,Canceled)
-  names(df) <- c("Weekday","Month","Day","Year","Airline","Flight","From","To","DepartDelay","ArriveDelay","Canceled")
+  df <- select(df,Weekday,Month,DAY_OF_MONTH,YEAR,Airline,FL_NUM,
+               FromAirport,ToAirport,DEP_DELAY,ARR_DELAY,Canceled)
+  names(df) <- c("Weekday","Month","Day","Year","Airline","Flight",
+                 "From","To","DepartDelay","ArriveDelay","Canceled")
   
   return (df)
 }
 
+base.dir <- getwd()
+loadLibraries()
+setwd("./data/")
 createLookupTables()
-proj.dir <- "/Users/mgast/Dropbox/data-science-specialization/9-developing-data-products/DevelopingDataProducts_CourseProject/data"
 
-jan.delay <- readMonthDelay("2015_01_ONTIME.csv",proj.dir)
-feb.delay <- readMonthDelay("2015_02_ONTIME.csv",proj.dir)
-mar.delay <- readMonthDelay("2015_03_ONTIME.csv",proj.dir)
-apr.delay <- readMonthDelay("2015_04_ONTIME.csv",proj.dir)
-may.delay <- readMonthDelay("2015_05_ONTIME.csv",proj.dir)
-jun.delay <- readMonthDelay("2015_06_ONTIME.csv",proj.dir)
-jul.delay <- readMonthDelay("2015_07_ONTIME.csv",proj.dir)
-aug.delay <- readMonthDelay("2015_08_ONTIME.csv",proj.dir)
+jan.delay <- readMonthDelay("2015_01_ONTIME.csv")
+#Application takes too long to load with all eight months of data,
+#restrict to just 1.
+#
+#feb.delay <- readMonthDelay("2015_02_ONTIME.csv")
+#mar.delay <- readMonthDelay("2015_03_ONTIME.csv")
+#apr.delay <- readMonthDelay("2015_04_ONTIME.csv")
+#may.delay <- readMonthDelay("2015_05_ONTIME.csv")
+#jun.delay <- readMonthDelay("2015_06_ONTIME.csv")
+#jul.delay <- readMonthDelay("2015_07_ONTIME.csv")
+#aug.delay <- readMonthDelay("2015_08_ONTIME.csv")
+#ytd.2015.delay <- rbind(jan.delay,feb.delay,mar.delay,apr.delay,may.delay,jun.delay,jul.delay,aug.delay)
+ytd.2015.delay <- jan.delay
 
-ytd.2015.delay <- rbind(jan.delay,feb.delay,mar.delay,apr.delay,may.delay,jun.delay,jul.delay,aug.delay)
-
+# Add airline code field to the data, and simplify airport to the origin city.
 ytd.2015.delay <- ytd.2015.delay %>% mutate(airlineCode=lapply(strsplit(as.character(Airline),": "),"[[",2))
 ytd.2015.delay <- ytd.2015.delay %>% mutate(City=lapply(strsplit(as.character(From),": "),"[[",1))
 ytd.2015.delay$airlineCode <- as.character(ytd.2015.delay$airlineCode)
 ytd.2015.delay$City <- as.character(ytd.2015.delay$City)
+
+# Return out of the data directory after finishing processing this file.
+setwd("..")

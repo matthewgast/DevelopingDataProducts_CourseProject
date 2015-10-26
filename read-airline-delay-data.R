@@ -14,6 +14,7 @@ loadLibraries <- function() {
   library(shiny)
   library(MASS)
   library(ggplot2) # Must come before dplyr
+  library(DT)
   library(plyr)
   library(dplyr)
 }

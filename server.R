@@ -7,10 +7,6 @@
 ## Coursera "Developing Data Products" course in the Johns Hopkins
 ## Data Science Specialization
 
-# Begin by reading in the data
-source("read-airline-delay-data.R")
-source("airline-delay-support-functions.R")
-
 function(input, output) {
 
   # Select data based on user inputs

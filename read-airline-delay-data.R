@@ -110,3 +110,16 @@ ytd.2015.delay$City <- as.character(ytd.2015.delay$City)
 
 # Return out of the data directory after finishing processing this file.
 setwd("..")
+
+# There are 300 airports in the list, find the top 10 busiest to put in the UI
+top10AirportList <- ytd.2015.delay %>%
+  group_by(From) %>%
+  summarize(count=n()) %>%
+  arrange(desc(count)) %>%
+  head(10)
+
+# Get list of airlines for UI work
+airlineList <- sort(unique(ytd.2015.delay$Airline))
+airlineNames <- strsplit(as.character(airlineList),":")
+airlineCodes <- substr(sapply(airlineNames, "[[",2),2,3)
+

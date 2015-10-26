@@ -1,0 +1,10 @@
+name: DevelopingDataProducts_CourseProject
+account: matthewgast
+server: shinyapps.io
+appId: 65999
+bundleId: 297980
+url:
+        https://matthewgast.shinyapps.io/DevelopingDataProducts_CourseProject
+when: 1445823505.78435
+asMultiple: FALSE
+asStatic: FALSE
